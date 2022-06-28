@@ -1,0 +1,92 @@
+options:
+    # Do not change!
+    question: {@question}
+    answer1: {@answer1}
+    answer2: {@answer2}
+    answer3: {@answer3}
+    answer4: {@answer4}
+ 
+    # You can change this
+    alertMessage: "&6A poll is happening right<tooltip:&aClick here to vote in a poll><command:/poll join> &a&lhere<reset><reset>&6!"
+    alreadyVotedMessage: "&cYou have already voted!"
+    voteCounterMessage: "&6votes"
+ 
+    # And this
+    adminPermission: "op"
+ 
+command /poll <text> [<text>] [<text>] [<text>] [<text>] [<text>]:
+    trigger:
+        arg-1 is "start":
+            set {poll.ans1} to 0
+            set {poll.ans2} to 0
+            set {poll.ans3} to 0
+            set {poll.ans4} to 0
+            clear {poll.votes::*}
+ 
+            set metadata tag "pollGUI" of player to chest inventory with 3 rows named "&a&lPOLL"
+            set slot 4 of metadata tag "pollGUI" of player to paper named "&f&lQuestion" with lore "&6%{@question}%"
+            set slot 10 of metadata tag "pollGUI" of player to red terracotta named "&6&l%{@answer1}%"
+            set slot 12 of metadata tag "pollGUI" of player to lime terracotta named "&6&l%{@answer2}%"
+            set slot 14 of metadata tag "pollGUI" of player to blue terracotta named "&6&l%{@answer3}%"
+            set slot 16 of metadata tag "pollGUI" of player to yellow terracotta named "&6&l%{@answer4}%"
+           
+            broadcast {@alertMessage}
+ 
+        arg-1 is "set":
+            player has permission {@adminPermission}:
+                set {@answer1} to arg-2
+                set {@answer2} to arg-3
+                set {@answer3} to arg-4
+                set {@answer4} to arg-5
+                set {@question} to arg-6
+ 
+                send "Answer 1 set to: %{@answer1}%"
+                send "Answer 2 set to: %{@answer2}%"
+                send "Answer 3 set to: %{@answer3}%"
+                send "Answer 4 set to: %{@answer4}%"
+                send "Question set to: %{@question}%"
+ 
+        arg-1 is "result":
+            player has permission {@adminPermission}:
+                set metadata tag "pollResultGUI" of player to chest inventory with 3 rows named "&a&lPOLL"
+                set slot 4 of metadata tag "pollResultGUI" of player to paper named "&f&lQuestion" with lore "&6%{@question}%"
+                set slot 10 of metadata tag "pollResultGUI" of player to red terracotta named "&6&l%{@answer1}%" with lore "&6&l%{poll.ans1}% %{@voteCounterMessage}%"
+                set slot 12 of metadata tag "pollResultGUI" of player to lime terracotta named "&6&l%{@answer2}%" with lore "&6&l%{poll.ans2}% %{@voteCounterMessage}%"
+                set slot 14 of metadata tag "pollResultGUI" of player to blue terracotta named "&6&l%{@answer3}%" with lore "&6&l%{poll.ans3}% %{@voteCounterMessage}%"
+                set slot 16 of metadata tag "pollResultGUI" of player to yellow terracotta named "&6&l%{@answer4}%" with lore "&6&l%{poll.ans4}% %{@voteCounterMessage}%"
+                open (metadata tag "pollResultGUI" of player) to player
+       
+        arg-1 is "join":
+            if {poll.votes::*} contains player:
+                send {@alreadyVotedMessage} to player
+            else:
+                open (metadata tag "pollGUI" of player) to player
+
+        if arg-1 is "help":
+            send "&6&l/poll start &7&l- Starts The Poll"
+            send "&6&l/poll set &7&l- Sets The Question And Answers"
+            send "&6&l/poll result &7&l- Shows The Poll Results"
+            send "&6&l/poll join &7&l- Join The Poll"
+ 
+on inventory click:
+    if event-inventory = (metadata tag "pollGUI" of player):
+        cancel event
+        add player to {poll.votes::*}
+ 
+        if event-slot is 10:
+            add 1 to {poll.ans1}
+            close player's inventory
+        if event-slot is 12:
+            add 1 to {poll.ans2}
+            close player's inventory
+        if event-slot is 14:
+            add 1 to {poll.ans3}
+            close player's inventory
+        if event-slot is 16:
+            add 1 to {poll.ans4}
+            close player's inventory
+   
+    if event-inventory = (metadata tag "pollResultGUI" of player):
+        cancel event
+ 
+ 
